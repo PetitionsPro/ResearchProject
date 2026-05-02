@@ -57,9 +57,20 @@ def anonimize_personal_info(payload):
         "address": secure_encrypt(payload.get("address"))
     }
 
+def decrypt_personal_info(encrypted_payload):
+    def secure_decrypt(value):
+        if not value:
+            return ""
+        if isinstance(value, list):
+            return [secure_decrypt(v) for v in value]
+        try:
+            return fernet.decrypt(value.encode()).decode()
+        except Exception:
+            return "Decryption failed"
 
-
-
-    
-    
-    
+    return {
+        "name": secure_decrypt(encrypted_payload.get("name")),
+        "email": secure_decrypt(encrypted_payload.get("email")),
+        "phone": secure_decrypt(encrypted_payload.get("phone")),
+        "address": secure_decrypt(encrypted_payload.get("address"))
+    }

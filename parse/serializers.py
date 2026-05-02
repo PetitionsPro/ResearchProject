@@ -7,3 +7,9 @@ class CvUploadSerializer(serializers.Serializer):
         if not value.name.endswith('.pdf'):
             raise serializers.ValidationError("Only PDF files are allowed.")
         return value
+from .models import Candidate_parsed_data
+
+class CandidateParsedDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Candidate_parsed_data
+        fields='__all__'

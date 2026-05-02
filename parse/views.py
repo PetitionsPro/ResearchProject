@@ -6,19 +6,15 @@ import json
 
 from pypdf import PdfReader
 
-from .serializers import CvUploadSerializer
-from .utils import (
-    fix_spaced_text,
-    extract_regex_phone_email,anonimize_personal_info
-    
-)
-
+from .serializers import CvUploadSerializer, CandidateParsedDataSerializer
+from .utils import fix_spaced_text, extract_regex_phone_email, anonimize_personal_info,decrypt_personal_info
 from .npl import get_nlp
-
 from .openai_gpt import open_ai_api_call
-
+from .models import Candidate_parsed_data
+from rest_framework import permissions
 
 class CvUploadView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
         serializer = CvUploadSerializer(data=request.data)
@@ -126,15 +122,92 @@ class CvUploadView(APIView):
             "email": emails,
             "address": list(set(address)),
         }
-        anonymized_data=anonimize_personal_info(payload)
-        
+        anonimized_data=anonimize_personal_info(payload)
+        print("Anonymous Data:", anonimized_data)
+
+
+        candidate_parsed_data=Candidate_parsed_data.objects.create(
+            user=request.user,
+            name=anonimized_data['name'],
+            email=anonimized_data['email'],
+            phone=anonimized_data['phone'],
+            address=anonimized_data['address'],
+            skills=", ".join(result['skills']),
+            experience=", ".join(result['experience']),
+            education=", ".join(result['education']),
+            soft_skills=", ".join(result['soft_skills']),
+            resume=file
+        )
+
+
+
 
         exclude_keys=["name","phone","email","address"]
 
+
+
         excludee_personal_info={k:v for k,v in result.items() if k not in exclude_keys}
+        print(excludee_personal_info)
 
-        stroy=open_ai_api_call(excludee_personal_info)
+        story=open_ai_api_call(excludee_personal_info)
 
-        print(stroy)
+        if story:
+            story=json.loads(story)
+            candidate_parsed_data.story=story.get("story")
+            candidate_parsed_data.save()
 
-        return Response(result, status=200)
+        print(story.get("story"))
+
+        return Response({"story":story.get("story")}, status=200)
+
+
+
+
+
+
+from .serializers import CvUploadSerializer, CandidateParsedDataSerializer
+
+class StoryDataView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Candidate_parsed_data.objects.all().order_by('-created_at').only('id', 'story', 'resume')
+        return Candidate_parsed_data.objects.filter(user=user).order_by('-created_at').only('id', 'story', 'resume')
+    
+    def get(self, request, format=None):
+        candidate_parsed_data = self.get_queryset()
+        serializer = CandidateParsedDataSerializer(candidate_parsed_data, many=True)
+        return Response(serializer.data, status=200)    
+
+
+        
+from django.db.models import Q
+
+class UserSearchAPIView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+    
+
+    def get(self, request):
+        search_query = request.query_params.get('search', '').strip('"')
+
+        queryset = Candidate_parsed_data.objects.all()
+
+        if search_query:
+            queryset = queryset.filter(
+                Q(story__icontains=search_query)
+            )
+
+        serializer = CandidateParsedDataSerializer(queryset, many=True)
+
+        data = serializer.data
+        decrypt_personal_info_list = {"name": [], "phone": [], "email": [], "address": []}
+        for item in data:
+            decrypt_personal_info_list["name"].append(item.get("name"))
+            decrypt_personal_info_list["phone"].append(item.get("phone"))
+            decrypt_personal_info_list["email"].append(item.get("email"))
+            decrypt_personal_info_list["address"].append(item.get("address"))
+            
+        data_with_personal_info = decrypt_personal_info(decrypt_personal_info_list)
+        return Response(data_with_personal_info, status=200)
