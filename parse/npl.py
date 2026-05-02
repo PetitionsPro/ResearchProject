@@ -2,7 +2,7 @@ import spacy
 from spacy.pipeline import EntityRuler
 from dynamic_data.models import SkillModel, EducationModel
 
-# Cache the NLP model so we don't load it heavily on every request
+
 _nlp_instance = None
 
 def get_nlp():
@@ -11,8 +11,6 @@ def get_nlp():
         return _nlp_instance
 
     nlp = spacy.load("en_core_web_md")
-    # Kept NER enabled so we can globally detect GPE (countries, cities) and PERSON (names)
-
 
     ruler = nlp.add_pipe("entity_ruler", before="ner")
 

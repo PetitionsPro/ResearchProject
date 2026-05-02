@@ -15,6 +15,8 @@ from .utils import (
 
 from .npl import get_nlp
 
+from .openai_gpt import open_ai_api_call
+
 
 class CvUploadView(APIView):
 
@@ -89,28 +91,27 @@ class CvUploadView(APIView):
             
                 pass
 
-        if not name and lines:
-            invalid_name_keywords = ["RESUME", "CURRICULUM", "VITAE", "DEVELOPER", "ENGINEER", "EMAIL", "PHONE", "ADDRESS", "REACT", "PORTFOLIO", "PROFILE"]
-            for line in lines[:8]:  
-                clean_line = line.strip()
-                words = clean_line.split()
+        # if not name and lines:
+        #     invalid_name_keywords = ["RESUME", "CURRICULUM", "VITAE", "DEVELOPER", "ENGINEER", "EMAIL", "PHONE", "ADDRESS", "REACT", "PORTFOLIO", "PROFILE"]
+        #     for line in lines[:8]:  
+        #         clean_line = line.strip()
+        #         words = clean_line.split()
                 
             
-                if 1 <= len(words) <= 4:
-                    if any(char.isdigit() or char in "@#$%" for char in clean_line):
-                        continue
+        #         if 1 <= len(words) <= 4:
+        #             if any(char.isdigit() or char in "@#$%" for char in clean_line):
+        #                 continue
                         
                     
-                    if any(keyword in clean_line.upper() for keyword in invalid_name_keywords):
-                        continue
+        #             if any(keyword in clean_line.upper() for keyword in invalid_name_keywords):
+        #                 continue
                         
                     
-                    if all(word.replace('.', '').replace('-', '').isalpha() for word in words):
-                        name = clean_line
-                        break
+        #             if all(word.replace('.', '').replace('-', '').isalpha() for word in words):
+        #                 name = clean_line
+        #                 break
 
         result = {
-            "name": name,
             "phone": phones,
             "email": emails,
             "skills": list(set(skills)),
@@ -119,5 +120,21 @@ class CvUploadView(APIView):
             "soft_skills": list(set(soft_skills)),
             "address": list(set(address)),
         }
+        payload={
+            "name": name,
+            "phone": phones,
+            "email": emails,
+            "address": list(set(address)),
+        }
+        anonymized_data=anonimize_personal_info(payload)
+        
+
+        exclude_keys=["name","phone","email","address"]
+
+        excludee_personal_info={k:v for k,v in result.items() if k not in exclude_keys}
+
+        stroy=open_ai_api_call(excludee_personal_info)
+
+        print(stroy)
 
         return Response(result, status=200)
