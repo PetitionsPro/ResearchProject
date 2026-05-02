@@ -14,7 +14,7 @@ OPENAI_API_KEY=config('OPENAI_API_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+AUTH_USER_MODEL = 'accounts.CustomUser'
 ALLOWED_HOSTS = []
 
 

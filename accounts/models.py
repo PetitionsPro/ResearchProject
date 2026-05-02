@@ -43,6 +43,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     USERNAME_FIELD = 'email'
     date_joined = models.DateTimeField(auto_now_add=True)
+    REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
     def __str__(self):

@@ -8,7 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('cv/', include('parse.urls')),
     path('data/', include('dynamic_data.urls')),
-    path('account', include('accounts.urls')),
+    path('accounts/', include('accounts.urls')),
 ]
 
 if settings.DEBUG:
