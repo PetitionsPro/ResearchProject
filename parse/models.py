@@ -5,9 +5,10 @@ from django.db import models
 
 class Candidate(models.Model):
     user_uid=models.CharField(max_length=255, unique=True)
-    name=models.CharField(max_length=255)
-    email=models.EmailField()
-    phone=models.CharField(max_length=20)
+    name=models.BinaryField(null=True, blank=True)
+    email=models.BinaryField(null=True, blank=True)
+    phone=models.BinaryField(null=True, blank=True)
+    address=models.BinaryField(null=True, blank=True)
     skills=models.TextField()
     experience=models.TextField()
     education=models.TextField()
