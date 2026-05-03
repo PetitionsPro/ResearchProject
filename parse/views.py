@@ -228,6 +228,13 @@ class UserSearchAPIView(APIView):
             
         data_with_personal_info = decrypt_personal_info(decrypt_personal_info_list)
 
+
+
+        print(data_with_personal_info)
+
+        for d in data_with_personal_info:
+           data_with_personal_info[d]=list(set(data_with_personal_info[d]))
+
         emails=data_with_personal_info.get("email", [])
         phones=data_with_personal_info.get("phone", [])
         addresses=data_with_personal_info.get("address", [])
