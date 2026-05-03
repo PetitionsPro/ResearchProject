@@ -12,6 +12,7 @@ from .npl import get_nlp
 from .openai_gpt import open_ai_api_call
 from .models import Candidate_parsed_data
 from rest_framework import permissions
+from .services.crypto import generate_blind_index
 
 class CvUploadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -123,6 +124,9 @@ class CvUploadView(APIView):
             "address": list(set(address)),
         }
         anonimized_data=anonimize_personal_info(payload)
+        email_idx=generate_blind_index(anonimized_data['email'])
+        phone_idx=generate_blind_index(anonimized_data['phone'])
+        address_idx=generate_blind_index(anonimized_data['address'])
         print("Anonymous Data:", anonimized_data)
 
 
@@ -130,8 +134,11 @@ class CvUploadView(APIView):
             user=request.user,
             name=anonimized_data['name'],
             email=anonimized_data['email'],
+            email_idx=email_idx,
             phone=anonimized_data['phone'],
+            phone_idx=phone_idx,
             address=anonimized_data['address'],
+            address_idx=address_idx,
             skills=", ".join(result['skills']),
             experience=", ".join(result['experience']),
             education=", ".join(result['education']),
