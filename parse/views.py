@@ -6,6 +6,7 @@ import json
 
 from pypdf import PdfReader
 
+
 from .serializers import CvUploadSerializer, CandidateParsedDataSerializer
 from .utils import fix_spaced_text, extract_regex_phone_email, anonimize_personal_info,decrypt_personal_info
 from .npl import get_nlp
@@ -13,8 +14,10 @@ from .openai_gpt import open_ai_api_call
 from .models import Candidate_parsed_data
 from rest_framework import permissions
 from .services.crypto import generate_blind_index
+from .services.masking import mask_emails, mask_phones, mask_addresses
 
 class CvUploadView(APIView):
+
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
@@ -81,7 +84,7 @@ class CvUploadView(APIView):
                     soft_skills.append(ent.text)
 
                 elif ent.label_ in ["ADDRESS", "GPE", "LOC"]:
-                    invalid_addresses = ["PROJECTS", "EDUCATION", "SKILLS", "CGPA", "LINKEDIN", "GITHUB", "REACT", "REDUX", "PORTFOLIO"]
+                    invalid_addresses = ["PROJECTS", "EDUCATION", "SKILLS", "CGPA", "LINKEDIN", "GITHUB", "REACT", "REDUX", "PORTFOLIO","Express.js","Node.js","MERN","MEAN","LAMP","Django","Flask","Spring Boot","Ruby on Rails","Laravel","ASP.NET"]
                     if not any(inv in ent.text.upper() for inv in invalid_addresses):
                         address.append(ent.text)
 
@@ -224,7 +227,22 @@ class UserSearchAPIView(APIView):
             decrypt_personal_info_list["address"].append(item.get("address"))
             
         data_with_personal_info = decrypt_personal_info(decrypt_personal_info_list)
-        return Response(data_with_personal_info, status=200)
+
+        emails=data_with_personal_info.get("email", [])
+        phones=data_with_personal_info.get("phone", [])
+        addresses=data_with_personal_info.get("address", [])
+
+        masked_emails=mask_emails(emails)
+        masked_phones=mask_phones(phones)
+        masked_addresses=mask_addresses(addresses)
+
+        masked_data_personal_info={
+            "email": masked_emails,
+            "phone": masked_phones,
+            "address": masked_addresses
+        }
+
+        return Response(masked_data_personal_info, status=200)
 
 
 
