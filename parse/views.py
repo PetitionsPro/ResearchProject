@@ -124,9 +124,16 @@ class CvUploadView(APIView):
             "address": list(set(address)),
         }
         anonimized_data=anonimize_personal_info(payload)
-        email_idx=generate_blind_index(anonimized_data['email'])
-        phone_idx=generate_blind_index(anonimized_data['phone'])
-        address_idx=generate_blind_index(anonimized_data['address'])
+        if payload['email']:
+            payload['email']=payload['email'][0]
+        if payload['phone']:
+            payload['phone']=payload['phone'][0]
+        if payload['address']:
+            payload['address']=payload['address'][0]
+       
+        email_idx=generate_blind_index(payload['email'])
+        phone_idx=generate_blind_index(payload['phone'])
+        address_idx=generate_blind_index(payload['address'])
         print("Anonymous Data:", anonimized_data)
 
 
@@ -218,3 +225,21 @@ class UserSearchAPIView(APIView):
             
         data_with_personal_info = decrypt_personal_info(decrypt_personal_info_list)
         return Response(data_with_personal_info, status=200)
+
+
+
+
+class StorySearchByEmailOrPhone(APIView):
+    permission_classes= [permissions.IsAdminUser]
+    def get(self,request):
+        search_query=request.query_params.get('search','').strip('"')
+        idx=generate_blind_index(search_query)
+    
+        queryset=Candidate_parsed_data.objects.filter(
+            Q(email_idx=idx) |
+            Q(phone_idx=idx)
+        )
+        print(queryset)
+        serializer=CandidateParsedDataSerializer(queryset,many=True,fields=['id','story','resume'])
+        return Response(serializer.data,status=200)
+        
