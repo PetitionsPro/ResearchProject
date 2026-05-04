@@ -20,6 +20,43 @@ def first_text_value(value):
         return ""
     return str(value).strip()
 
+def unique_values(values):
+    return list(dict.fromkeys(value for value in values if value))
+
+def unique_complete_phones(values):
+    phones_by_digits = {}
+
+    for phone in unique_values(values):
+        digits = ''.join(char for char in str(phone) if char.isdigit())
+        if not digits:
+            phones_by_digits[str(phone)] = phone
+            continue
+
+        current = phones_by_digits.get(digits)
+        if current is None or (str(phone).strip().startswith("+") and not str(current).strip().startswith("+")):
+            phones_by_digits[digits] = phone
+
+    phones = list(phones_by_digits.values())
+    complete_phones = []
+
+    for phone in phones:
+        digits = ''.join(char for char in str(phone) if char.isdigit())
+        if not digits:
+            complete_phones.append(phone)
+            continue
+
+        is_partial = False
+        for other in phones:
+            other_digits = ''.join(char for char in str(other) if char.isdigit())
+            if digits != other_digits and digits in other_digits:
+                is_partial = True
+                break
+
+        if not is_partial:
+            complete_phones.append(phone)
+
+    return complete_phones
+
 class CvUploadView(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
@@ -226,16 +263,9 @@ class UserSearchAPIView(APIView):
             
         data_with_personal_info = decrypt_personal_info(decrypt_personal_info_list)
 
-
-
-        print(data_with_personal_info)
-
-        for d in data_with_personal_info:
-           data_with_personal_info[d]=list(set(data_with_personal_info[d]))
-
-        emails=data_with_personal_info.get("email", [])
-        phones=data_with_personal_info.get("phone", [])
-        addresses=data_with_personal_info.get("address", [])
+        emails=unique_values(data_with_personal_info.get("email", []))
+        phones=unique_complete_phones(data_with_personal_info.get("phone", []))
+        addresses=unique_values(data_with_personal_info.get("address", []))
 
         masked_emails=mask_emails(emails)
         masked_phones=mask_phones(phones)

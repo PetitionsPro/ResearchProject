@@ -18,10 +18,22 @@ import re
 def extract_regex_phone_email(text):
 
     email_pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-    phone_pattern = r"(?:\+\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}"
+    phone_pattern = r"(?<![\w@])(?:\+?\d[\d().\-\s]{6,}\d)(?![\w@])"
 
     emails = re.findall(email_pattern, text)
-    phones = re.findall(phone_pattern, text)
+    phone_matches = re.findall(phone_pattern, text)
+
+    phones = []
+    seen_digits = set()
+    for phone in phone_matches:
+        phone = phone.strip()
+        digits = re.sub(r"\D", "", phone)
+        if not 7 <= len(digits) <= 15:
+            continue
+        if any(digits in existing or existing in digits for existing in seen_digits):
+            continue
+        seen_digits.add(digits)
+        phones.append(phone)
 
     return {
         "phone": phones,
