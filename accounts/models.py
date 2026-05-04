@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser,BaseUserManager
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
+
 class CustomUserManager(BaseUserManager):
 
     def create_user(self, email, password=None, **extra_fields):
@@ -37,10 +38,13 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
+from parse.services.crypto import generate_blind_index
+from parse.utils import secure_encrypt
 class CustomUser(AbstractUser):
     username = models.CharField(max_length=150, blank=True, null=True)
     full_name=models.CharField(max_length=150,null=True,blank=True)
     email = models.EmailField(unique=True)
+    email_encrypted=models.TextField(null=True,blank=True)
     USERNAME_FIELD = 'email'
     date_joined = models.DateTimeField(auto_now_add=True)
     REQUIRED_FIELDS = []
@@ -51,6 +55,8 @@ class CustomUser(AbstractUser):
 
     class Meta:
         ordering = ['-date_joined']
+    
+  
 
 
 

@@ -40,8 +40,8 @@ from django.conf import settings
 fernet=Fernet(settings.PII_ENCRYPTION_KEY.encode())
 
 
-def anonimize_personal_info(payload):
-    def secure_encrypt(value):
+
+def secure_encrypt(value):
         if value is None:
             value = ""
         elif isinstance(value, list):
@@ -49,6 +49,9 @@ def anonimize_personal_info(payload):
         else:
             value = str(value)
         return fernet.encrypt(value.encode()).decode()
+
+def anonimize_personal_info(payload):
+  
 
     return {
         "name": secure_encrypt(payload.get("name")),

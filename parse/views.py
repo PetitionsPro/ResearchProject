@@ -3,10 +3,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import json
-
 from pypdf import PdfReader
-
-
 from .serializers import CvUploadSerializer, CandidateParsedDataSerializer
 from .utils import fix_spaced_text, extract_regex_phone_email, anonimize_personal_info,decrypt_personal_info
 from .npl import get_nlp
@@ -15,6 +12,13 @@ from .models import Candidate_parsed_data
 from rest_framework import permissions
 from .services.crypto import generate_blind_index
 from .services.masking import mask_emails, mask_phones, mask_addresses
+
+def first_text_value(value):
+    if isinstance(value, (list, tuple, set)):
+        return next((str(item).strip() for item in value if str(item).strip()), "")
+    if value is None:
+        return ""
+    return str(value).strip()
 
 class CvUploadView(APIView):
 
@@ -122,17 +126,11 @@ class CvUploadView(APIView):
         }
         payload={
             "name": name,
-            "phone": phones,
-            "email": emails,
-            "address": list(set(address)),
+            "phone": first_text_value(phones),
+            "email": first_text_value(emails),
+            "address": first_text_value(set(address)),
         }
         anonimized_data=anonimize_personal_info(payload)
-        if payload['email']:
-            payload['email']=payload['email'][0]
-        if payload['phone']:
-            payload['phone']=payload['phone'][0]
-        if payload['address']:
-            payload['address']=payload['address'][0]
        
         email_idx=generate_blind_index(payload['email'])
         phone_idx=generate_blind_index(payload['phone'])
@@ -189,7 +187,7 @@ class StoryDataView(APIView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_staff:
+        if user.is_staff or user.is_superuser:
             return Candidate_parsed_data.objects.all().order_by('-created_at').only('id', 'story', 'resume')
         return Candidate_parsed_data.objects.filter(user=user).order_by('-created_at').only('id', 'story', 'resume')
     

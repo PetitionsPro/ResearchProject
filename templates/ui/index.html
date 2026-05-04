@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CV Parser Workspace</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #eef3f8;
+      --ink: #142033;
+      --muted: #627086;
+      --line: #d8e1ec;
+      --accent: #1f7a8c;
+      --accent-dark: #155d6d;
+      --ok: #147a45;
+      --warn: #9f5b00;
+      --bad: #b42318;
+      --shadow: 0 16px 38px rgba(20, 32, 51, 0.08);
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(216, 225, 236, 0.92);
+      background: rgba(245, 247, 251, 0.95);
+      backdrop-filter: blur(14px);
+    }
+
+    .nav-inner,
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav-inner {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      min-height: 72px;
+      padding: 12px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: 0;
+      flex: 0 0 auto;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      line-height: 1.1;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 8px 11px;
+      border-radius: 7px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 740;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus-visible {
+      background: var(--surface-soft);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .session {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      max-width: 260px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.86rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pill.signed-in {
+      border-color: rgba(20, 122, 69, 0.28);
+      background: #edf8f1;
+      color: var(--ok);
+    }
+
+    .shell {
+      padding: 22px 0 44px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 22px;
+    }
+
+    .hero-copy {
+      display: grid;
+      gap: 12px;
+    }
+
+    .hero h1 {
+      max-width: 740px;
+      font-size: clamp(2rem, 4.3vw, 3.35rem);
+      line-height: 1.03;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .hero-copy .subtle {
+      max-width: 660px;
+      font-size: 1rem;
+    }
+
+    .hero-card,
+    .panel,
+    .step,
+    .record,
+    .mini-list {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .hero-card {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .main {
+      display: grid;
+      gap: 22px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+      scroll-margin-top: 96px;
+    }
+
+    .section,
+    .panel {
+      scroll-margin-top: 96px;
+    }
+
+    .panel {
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 760;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 6px;
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-soft);
+    }
+
+    .tab {
+      min-height: 38px;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 1px 4px rgba(20, 32, 51, 0.08);
+    }
+
+    .form {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--ink);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.14);
+    }
+
+    textarea {
+      min-height: 118px;
+      resize: vertical;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 7px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 760;
+      text-decoration: none;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn.secondary {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .btn.secondary:hover {
+      background: var(--surface-soft);
+    }
+
+    .btn.ghost {
+      min-height: 36px;
+      padding: 8px 11px;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .btn.ghost:hover {
+      background: var(--surface-soft);
+      color: var(--ink);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+      transform: none;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .step {
+      min-height: 104px;
+      padding: 14px;
+    }
+
+    .step-number {
+      display: inline-grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      margin-bottom: 10px;
+      border-radius: 999px;
+      background: #d7ecec;
+      color: var(--accent-dark);
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .file-drop {
+      display: grid;
+      place-items: center;
+      min-height: 148px;
+      padding: 18px;
+      border: 1px dashed #a9b8c9;
+      border-radius: 8px;
+      background: #f9fbfd;
+      text-align: center;
+    }
+
+    .file-drop input {
+      max-width: 100%;
+      margin-top: 10px;
+      padding: 9px;
+      background: var(--surface);
+    }
+
+    .status {
+      display: none;
+      margin-top: 14px;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface-soft);
+      color: var(--ink);
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.ok {
+      border-color: rgba(20, 122, 69, 0.28);
+      background: #edf8f1;
+      color: var(--ok);
+    }
+
+    .status.bad {
+      border-color: rgba(180, 35, 24, 0.28);
+      background: #fff1f0;
+      color: var(--bad);
+    }
+
+    .status.warn {
+      border-color: rgba(159, 91, 0, 0.28);
+      background: #fff7e8;
+      color: var(--warn);
+    }
+
+    .story-box {
+      min-height: 146px;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      color: var(--ink);
+      white-space: pre-wrap;
+    }
+
+    .records,
+    .result-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-list {
+      margin-top: 14px;
+    }
+
+    .record {
+      padding: 14px;
+    }
+
+    .record-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .record-story {
+      margin-bottom: 12px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .meta span,
+    .meta a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .empty {
+      padding: 14px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: #fbfcfe;
+    }
+
+    .split-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini-list {
+      min-height: 90px;
+      padding: 12px;
+      background: #fbfcfe;
+    }
+
+    .mini-list h3 {
+      margin-bottom: 8px;
+      font-size: 0.88rem;
+    }
+
+    .mini-list ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 980px) {
+      .nav-inner,
+      .hero,
+      .section-grid,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-inner {
+        gap: 10px;
+      }
+
+      .nav-links {
+        order: 3;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .session {
+        justify-content: center;
+      }
+
+      .workflow {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav-inner,
+      .shell {
+        width: min(100% - 22px, 1180px);
+      }
+
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+      }
+
+      .nav-links {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: visible;
+      }
+
+      .nav-link {
+        width: 100%;
+        min-height: 40px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .session,
+      .search-row,
+      .split-list {
+        grid-template-columns: 1fr;
+      }
+
+      .session {
+        justify-content: stretch;
+      }
+
+      .pill,
+      .btn {
+        width: 100%;
+      }
+
+      .toolbar {
+        align-items: stretch;
+      }
+
+      .hero h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-mark">CV</div>
+        <div>
+          <h1>CV Parser</h1>
+          <p class="subtle">Resume parsing workspace</p>
+        </div>
+      </div>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a class="nav-link" href="#account">Account</a>
+        <a class="nav-link" href="#parse">Parse</a>
+        <a class="nav-link" href="/stories/">Stories</a>
+        <a class="nav-link admin-only hidden" href="/admin-stories/">All Stories</a>
+        <a class="nav-link admin-only hidden" href="/admin-skills/">Skills</a>
+        <a class="nav-link admin-only hidden" href="/admin-search/">Admin</a>
+      </nav>
+      <div class="session">
+        <a class="btn secondary" id="navLoginBtn" href="#account">Login</a>
+        <a class="btn" id="navRegisterBtn" href="#account">Register</a>
+        <span class="pill hidden" id="sessionPill">Signed out</span>
+        <button class="btn ghost hidden" id="logoutBtn" type="button">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <section class="hero" aria-label="Workspace summary">
+      <div class="hero-copy">
+        <h1>Parse resumes and manage CV stories from one responsive dashboard.</h1>
+        <p class="subtle">Use the backend APIs for authentication, PDF parsing, stored story review, admin searches, and dynamic lookup data without leaving the browser.</p>
+      </div>
+      <div class="hero-card">
+        <strong>Process</strong>
+        <p class="subtle">Login, upload a PDF, review the generated story, then search or seed supporting data as needed.</p>
+      </div>
+    </section>
+
+    <main class="main">
+      <section class="section-grid" id="account">
+        <aside class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Account</h2>
+            <p class="subtle">Use a JWT session for protected endpoints.</p>
+          </div>
+          <div class="panel-body">
+            <div id="authForms">
+              <div class="tabs" role="tablist" aria-label="Account forms">
+                <button class="tab active" id="loginTab" type="button">Login</button>
+                <button class="tab" id="registerTab" type="button">Register</button>
+              </div>
+
+              <form class="form" id="loginForm">
+                <label>Email
+                  <input id="loginEmail" type="email" autocomplete="email" required>
+                </label>
+                <label>Password
+                  <input id="loginPassword" type="password" autocomplete="current-password" required>
+                </label>
+                <button class="btn" type="submit">Login</button>
+              </form>
+
+              <form class="form hidden" id="registerForm">
+                <label>Full name
+                  <input id="registerName" type="text" autocomplete="name">
+                </label>
+                <label>Email
+                  <input id="registerEmail" type="email" autocomplete="email" required>
+                </label>
+                <label>Password
+                  <input id="registerPassword" type="password" autocomplete="new-password" required>
+                </label>
+                <label>Confirm password
+                  <input id="registerConfirm" type="password" autocomplete="new-password" required>
+                </label>
+                <button class="btn" type="submit">Create account</button>
+              </form>
+            </div>
+
+            <div class="empty hidden" id="accountSignedIn">
+              You are signed in. Use the navbar to sign out.
+            </div>
+
+            <div class="status" id="accountStatus"></div>
+          </div>
+        </aside>
+
+        <div class="workflow" aria-label="Process overview">
+          <div class="step">
+            <span class="step-number">1</span>
+            <h2 class="panel-title">Sign in</h2>
+            <p class="subtle">Register or login to receive the access token used by protected CV APIs.</p>
+          </div>
+          <div class="step">
+            <span class="step-number">2</span>
+            <h2 class="panel-title">Upload PDF</h2>
+            <p class="subtle">Send a resume to `/cv/parse/` and receive the generated career story.</p>
+          </div>
+          <div class="step">
+            <span class="step-number">3</span>
+            <h2 class="panel-title">Review data</h2>
+            <p class="subtle">Load saved stories, search as admin, and seed skills or education data.</p>
+          </div>
+        </div>
+      </section>
+
+      <div>
+        <section class="panel section" id="parse">
+          <div class="panel-header">
+            <h2 class="panel-title">Parse Resume</h2>
+            <p class="subtle">PDF files only.</p>
+          </div>
+          <div class="panel-body">
+            <form class="form" id="parseForm">
+              <label class="file-drop">
+                <span>
+                  <strong>Select a resume PDF</strong><br>
+                  <span class="subtle">The API extracts text, stores anonymized data, and returns a story.</span>
+                </span>
+                <input id="resumeFile" type="file" accept="application/pdf,.pdf" required>
+              </label>
+              <button class="btn" type="submit">Parse CV</button>
+            </form>
+            <div class="status" id="parseStatus"></div>
+            <div class="story-box" id="storyBox">Generated story will appear here.</div>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      access: localStorage.getItem("cv_parser_access") || "",
+      refresh: localStorage.getItem("cv_parser_refresh") || "",
+      user: JSON.parse(localStorage.getItem("cv_parser_user") || "null")
+    };
+
+    const els = {
+      sessionPill: document.getElementById("sessionPill"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      navLoginBtn: document.getElementById("navLoginBtn"),
+      navRegisterBtn: document.getElementById("navRegisterBtn"),
+      adminOnly: document.querySelectorAll(".admin-only"),
+      authForms: document.getElementById("authForms"),
+      accountSignedIn: document.getElementById("accountSignedIn"),
+      loginTab: document.getElementById("loginTab"),
+      registerTab: document.getElementById("registerTab"),
+      loginForm: document.getElementById("loginForm"),
+      registerForm: document.getElementById("registerForm"),
+      accountStatus: document.getElementById("accountStatus"),
+      parseForm: document.getElementById("parseForm"),
+      parseStatus: document.getElementById("parseStatus"),
+      storyBox: document.getElementById("storyBox"),
+      loadStoriesBtn: document.getElementById("loadStoriesBtn"),
+      recordsList: document.getElementById("recordsList"),
+      recordsStatus: document.getElementById("recordsStatus")
+    };
+
+    function setBusy(button, busy, text) {
+      if (!button) return;
+      if (busy) {
+        button.dataset.originalText = button.textContent;
+        button.textContent = text || "Working...";
+        button.disabled = true;
+      } else {
+        button.textContent = button.dataset.originalText || button.textContent;
+        button.disabled = false;
+      }
+    }
+
+    function showStatus(el, message, type = "") {
+      el.textContent = typeof message === "string" ? message : JSON.stringify(message, null, 2);
+      el.className = `status show ${type}`.trim();
+    }
+
+    function clearStatus(el) {
+      el.textContent = "";
+      el.className = "status";
+    }
+
+    function authHeaders(extra = {}) {
+      const headers = { ...extra };
+      if (state.access) headers.Authorization = `Bearer ${state.access}`;
+      return headers;
+    }
+
+    async function parseResponse(response) {
+      const text = await response.text();
+      let data = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = text;
+        }
+      }
+
+      if (!response.ok) {
+        const detail = data && (data.detail || data.error) ? (data.detail || data.error) : data;
+        throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail || response.statusText, null, 2));
+      }
+
+      return data;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, options);
+      return parseResponse(response);
+    }
+
+    function saveSession(payload) {
+      state.access = payload.access || "";
+      state.refresh = payload.refresh || "";
+      state.user = payload.user || null;
+      localStorage.setItem("cv_parser_access", state.access);
+      localStorage.setItem("cv_parser_refresh", state.refresh);
+      localStorage.setItem("cv_parser_user", JSON.stringify(state.user));
+      renderSession();
+    }
+
+    function clearSession() {
+      state.access = "";
+      state.refresh = "";
+      state.user = null;
+      localStorage.removeItem("cv_parser_access");
+      localStorage.removeItem("cv_parser_refresh");
+      localStorage.removeItem("cv_parser_user");
+      renderSession();
+    }
+
+    function renderSession() {
+      const isAdmin = Boolean(state.user && state.user.is_admin);
+      els.adminOnly.forEach(item => item.classList.toggle("hidden", !isAdmin));
+
+      if (state.access && state.user) {
+        els.sessionPill.textContent = `${state.user.full_name || state.user.email} signed in`;
+        els.sessionPill.classList.add("signed-in");
+        els.sessionPill.classList.remove("hidden");
+        els.logoutBtn.classList.remove("hidden");
+        els.navLoginBtn.classList.add("hidden");
+        els.navRegisterBtn.classList.add("hidden");
+        els.authForms.classList.add("hidden");
+        els.accountSignedIn.classList.remove("hidden");
+      } else {
+        els.sessionPill.textContent = "Signed out";
+        els.sessionPill.classList.remove("signed-in");
+        els.sessionPill.classList.add("hidden");
+        els.logoutBtn.classList.add("hidden");
+        els.navLoginBtn.classList.remove("hidden");
+        els.navRegisterBtn.classList.remove("hidden");
+        els.authForms.classList.remove("hidden");
+        els.accountSignedIn.classList.add("hidden");
+      }
+    }
+
+    function showLoginMode(mode) {
+      const login = mode === "login";
+      els.loginTab.classList.toggle("active", login);
+      els.registerTab.classList.toggle("active", !login);
+      els.loginForm.classList.toggle("hidden", !login);
+      els.registerForm.classList.toggle("hidden", login);
+      clearStatus(els.accountStatus);
+    }
+
+    function splitValues(value) {
+      return value
+        .split(",")
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    function formatDate(value) {
+      if (!value) return "No date";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function recordTemplate(record) {
+      const story = record.story || "No story saved yet.";
+      const resumeLink = record.resume ? `<a href="${record.resume}" target="_blank" rel="noreferrer">Resume</a>` : "";
+      const details = [
+        record.skills ? `<span>Skills: ${escapeHtml(record.skills)}</span>` : "",
+        record.education ? `<span>Education: ${escapeHtml(record.education)}</span>` : "",
+        record.experience ? "<span>Experience found</span>" : "",
+        resumeLink
+      ].filter(Boolean).join("");
+
+      return `
+        <article class="record">
+          <div class="record-head">
+            <span>#${escapeHtml(record.id)}</span>
+            <span>${escapeHtml(formatDate(record.created_at))}</span>
+          </div>
+          <p class="record-story">${escapeHtml(story)}</p>
+          <div class="meta">${details || "<span>No extracted metadata</span>"}</div>
+        </article>
+      `;
+    }
+
+    async function loadStories() {
+      if (!els.recordsStatus || !els.recordsList || !els.loadStoriesBtn) return;
+      clearStatus(els.recordsStatus);
+      if (!state.access) {
+        showStatus(els.recordsStatus, "Login first to load saved stories.", "warn");
+        return;
+      }
+
+      setBusy(els.loadStoriesBtn, true, "Loading...");
+      try {
+        const data = await api("/cv/story-data/", { headers: authHeaders() });
+        els.recordsList.innerHTML = data.length
+          ? data.map(recordTemplate).join("")
+          : '<div class="empty">No parsed records found yet.</div>';
+        showStatus(els.recordsStatus, `Loaded ${data.length} record${data.length === 1 ? "" : "s"}.`, "ok");
+      } catch (error) {
+        showStatus(els.recordsStatus, error.message, "bad");
+      } finally {
+        setBusy(els.loadStoriesBtn, false);
+      }
+    }
+
+    els.loginTab.addEventListener("click", () => showLoginMode("login"));
+    els.registerTab.addEventListener("click", () => showLoginMode("register"));
+    els.navLoginBtn.addEventListener("click", () => showLoginMode("login"));
+    els.navRegisterBtn.addEventListener("click", () => showLoginMode("register"));
+
+    els.logoutBtn.addEventListener("click", () => {
+      clearSession();
+      showStatus(els.accountStatus, "Signed out.", "ok");
+    });
+
+    els.loginForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      clearStatus(els.accountStatus);
+      setBusy(event.submitter, true, "Logging in...");
+
+      try {
+        const data = await api("/accounts/login/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("loginEmail").value.trim(),
+            password: document.getElementById("loginPassword").value
+          })
+        });
+        saveSession(data);
+        showStatus(els.accountStatus, "Login successful.", "ok");
+        loadStories();
+      } catch (error) {
+        showStatus(els.accountStatus, error.message, "bad");
+      } finally {
+        setBusy(event.submitter, false);
+      }
+    });
+
+    els.registerForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      clearStatus(els.accountStatus);
+      setBusy(event.submitter, true, "Creating...");
+
+      const email = document.getElementById("registerEmail").value.trim();
+      try {
+        await api("/accounts/register/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            full_name: document.getElementById("registerName").value.trim(),
+            email,
+            password: document.getElementById("registerPassword").value,
+            confirm_password: document.getElementById("registerConfirm").value
+          })
+        });
+        showLoginMode("login");
+        document.getElementById("loginEmail").value = email;
+        showStatus(els.accountStatus, "Account created. Login with the new credentials.", "ok");
+      } catch (error) {
+        showStatus(els.accountStatus, error.message, "bad");
+      } finally {
+        setBusy(event.submitter, false);
+      }
+    });
+
+    document.getElementById("resumeFile").addEventListener("change", event => {
+      if (event.target.files[0]) {
+        els.storyBox.textContent = `Selected: ${event.target.files[0].name}`;
+      }
+    });
+
+    els.parseForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      clearStatus(els.parseStatus);
+
+      if (!state.access) {
+        showStatus(els.parseStatus, "Login first to parse a CV.", "warn");
+        return;
+      }
+
+      const file = document.getElementById("resumeFile").files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("file", file);
+      setBusy(event.submitter, true, "Parsing...");
+      els.storyBox.textContent = "Parsing resume and generating story...";
+
+      try {
+        const data = await api("/cv/parse/", {
+          method: "POST",
+          headers: authHeaders(),
+          body: formData
+        });
+        els.storyBox.textContent = data.story || "No story returned.";
+        showStatus(els.parseStatus, "CV parsed successfully.", "ok");
+        loadStories();
+      } catch (error) {
+        showStatus(els.parseStatus, error.message, "bad");
+      } finally {
+        setBusy(event.submitter, false);
+      }
+    });
+
+    if (els.loadStoriesBtn) {
+      els.loadStoriesBtn.addEventListener("click", loadStories);
+    }
+
+    renderSession();
+    if (new URLSearchParams(window.location.search).get("auth") === "register") {
+      showLoginMode("register");
+    }
+    if (state.access && els.recordsList) loadStories();
+  </script>
+</body>
+</html>

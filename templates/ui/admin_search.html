@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Search | CV Parser</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #eef3f8;
+      --ink: #142033;
+      --muted: #627086;
+      --line: #d8e1ec;
+      --accent: #1f7a8c;
+      --accent-dark: #155d6d;
+      --ok: #147a45;
+      --warn: #9f5b00;
+      --bad: #b42318;
+      --shadow: 0 16px 38px rgba(20, 32, 51, 0.08);
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(216, 225, 236, 0.92);
+      background: rgba(245, 247, 251, 0.95);
+      backdrop-filter: blur(14px);
+    }
+
+    .nav-inner,
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav-inner {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      min-height: 72px;
+      padding: 12px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      line-height: 1.1;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 8px 11px;
+      border-radius: 7px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 740;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: var(--surface-soft);
+      color: var(--ink);
+    }
+
+    .session {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      max-width: 260px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.86rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pill.signed-in {
+      border-color: rgba(20, 122, 69, 0.28);
+      background: #edf8f1;
+      color: var(--ok);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 7px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 760;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .btn.secondary {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .btn.secondary:hover {
+      background: var(--surface-soft);
+    }
+
+    .btn.ghost {
+      min-height: 36px;
+      padding: 8px 11px;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+    }
+
+    .shell {
+      padding: 28px 0 44px;
+    }
+
+    .page-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    .page-head h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.05;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel,
+    .record,
+    .mini-list {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .form {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--ink);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.14);
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .split-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini-list {
+      min-height: 90px;
+      padding: 12px;
+      background: #fbfcfe;
+      box-shadow: none;
+    }
+
+    .mini-list h3 {
+      margin-bottom: 8px;
+      font-size: 0.88rem;
+    }
+
+    .mini-list ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .result-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .record {
+      padding: 14px;
+      box-shadow: none;
+    }
+
+    .record-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .record-story {
+      margin-bottom: 12px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .meta span,
+    .meta a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .empty,
+    .status {
+      padding: 14px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      color: var(--muted);
+    }
+
+    .status {
+      display: none;
+      margin-top: 14px;
+      border-style: solid;
+      white-space: pre-wrap;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.ok {
+      border-color: rgba(20, 122, 69, 0.28);
+      background: #edf8f1;
+      color: var(--ok);
+    }
+
+    .status.bad {
+      border-color: rgba(180, 35, 24, 0.28);
+      background: #fff1f0;
+      color: var(--bad);
+    }
+
+    .status.warn {
+      border-color: rgba(159, 91, 0, 0.28);
+      background: #fff7e8;
+      color: var(--warn);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 900px) {
+      .nav-inner,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-links {
+        justify-content: flex-start;
+        overflow-x: auto;
+      }
+
+      .session {
+        justify-content: stretch;
+      }
+
+      .page-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .search-row,
+      .split-list {
+        grid-template-columns: 1fr;
+      }
+
+      .pill,
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-mark">CV</div>
+        <div>
+          <h1>CV Parser</h1>
+          <p class="subtle">Admin search tools</p>
+        </div>
+      </div>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a class="nav-link" href="/#account">Account</a>
+        <a class="nav-link" href="/#parse">Parse</a>
+        <a class="nav-link" href="/stories/">Stories</a>
+        <a class="nav-link admin-only hidden" href="/admin-stories/">All Stories</a>
+        <a class="nav-link admin-only hidden" href="/admin-skills/">Skills</a>
+        <a class="nav-link active admin-only hidden" href="/admin-search/">Admin</a>
+      </nav>
+      <div class="session">
+        <a class="btn secondary" id="navLoginBtn" href="/?auth=login#account">Login</a>
+        <a class="btn" id="navRegisterBtn" href="/?auth=register#account">Register</a>
+        <span class="pill hidden" id="sessionPill">Signed out</span>
+        <button class="btn ghost hidden" id="logoutBtn" type="button">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="page-head">
+      <div>
+        <h1>Admin Search</h1>
+        <p class="subtle">Search masked personal data by story text, or find stories by exact email or phone.</p>
+      </div>
+      <a class="btn secondary" href="/">Back to parser</a>
+    </section>
+
+    <div class="status show warn hidden" id="adminGate">Login with an admin account to use these search tools.</div>
+
+    <section class="grid-2">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Story Text Search</h2>
+          <p class="subtle">Returns masked email, phone, and address values from matching stories.</p>
+        </div>
+        <div class="panel-body">
+          <div class="form">
+            <div class="search-row">
+              <label>Story text
+                <input id="storySearchInput" type="search" placeholder="Django, React, leadership">
+              </label>
+              <button class="btn secondary" id="maskedSearchBtn" type="button">Find masked data</button>
+            </div>
+            <div class="split-list" id="maskedResults">
+              <div class="mini-list"><h3>Email</h3><ul><li>No results</li></ul></div>
+              <div class="mini-list"><h3>Phone</h3><ul><li>No results</li></ul></div>
+              <div class="mini-list"><h3>Address</h3><ul><li>No results</li></ul></div>
+            </div>
+          </div>
+          <div class="status" id="maskedStatus"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Email or Phone Search</h2>
+          <p class="subtle">Uses exact email or phone matching and returns story records.</p>
+        </div>
+        <div class="panel-body">
+          <div class="form">
+            <div class="search-row">
+              <label>Exact email or phone
+                <input id="exactSearchInput" type="search" placeholder="user@example.com">
+              </label>
+              <button class="btn secondary" id="exactSearchBtn" type="button">Find story</button>
+            </div>
+            <div class="result-list" id="exactResults">
+              <div class="empty">Enter an exact email or phone value to search.</div>
+            </div>
+          </div>
+          <div class="status" id="exactStatus"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      access: localStorage.getItem("cv_parser_access") || "",
+      user: JSON.parse(localStorage.getItem("cv_parser_user") || "null")
+    };
+
+    const els = {
+      sessionPill: document.getElementById("sessionPill"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      navLoginBtn: document.getElementById("navLoginBtn"),
+      navRegisterBtn: document.getElementById("navRegisterBtn"),
+      adminOnly: document.querySelectorAll(".admin-only"),
+      adminGate: document.getElementById("adminGate"),
+      storySearchInput: document.getElementById("storySearchInput"),
+      maskedSearchBtn: document.getElementById("maskedSearchBtn"),
+      maskedResults: document.getElementById("maskedResults"),
+      maskedStatus: document.getElementById("maskedStatus"),
+      exactSearchInput: document.getElementById("exactSearchInput"),
+      exactSearchBtn: document.getElementById("exactSearchBtn"),
+      exactResults: document.getElementById("exactResults"),
+      exactStatus: document.getElementById("exactStatus")
+    };
+
+    function setBusy(button, busy, text) {
+      if (!button) return;
+      if (busy) {
+        button.dataset.originalText = button.textContent;
+        button.textContent = text || "Working...";
+        button.disabled = true;
+      } else {
+        button.textContent = button.dataset.originalText || button.textContent;
+        button.disabled = false;
+      }
+    }
+
+    function showStatus(el, message, type = "") {
+      el.textContent = typeof message === "string" ? message : JSON.stringify(message, null, 2);
+      el.className = `status show ${type}`.trim();
+    }
+
+    function clearStatus(el) {
+      el.textContent = "";
+      el.className = "status";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "No date";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+    }
+
+    async function parseResponse(response) {
+      const text = await response.text();
+      let data = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = text;
+        }
+      }
+      if (!response.ok) {
+        const detail = data && (data.detail || data.error) ? (data.detail || data.error) : data;
+        throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail || response.statusText, null, 2));
+      }
+      return data;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, options);
+      return parseResponse(response);
+    }
+
+    function authHeaders(extra = {}) {
+      const headers = { ...extra };
+      if (state.access) headers.Authorization = `Bearer ${state.access}`;
+      return headers;
+    }
+
+    function renderSession() {
+      const isAdmin = Boolean(state.user && state.user.is_admin);
+      els.adminOnly.forEach(item => item.classList.toggle("hidden", !isAdmin));
+      els.adminGate.classList.toggle("hidden", isAdmin);
+      els.maskedSearchBtn.disabled = !isAdmin;
+      els.exactSearchBtn.disabled = !isAdmin;
+
+      if (state.access && state.user) {
+        els.sessionPill.textContent = `${state.user.full_name || state.user.email} signed in`;
+        els.sessionPill.classList.add("signed-in");
+        els.sessionPill.classList.remove("hidden");
+        els.logoutBtn.classList.remove("hidden");
+        els.navLoginBtn.classList.add("hidden");
+        els.navRegisterBtn.classList.add("hidden");
+      } else {
+        els.sessionPill.textContent = "Signed out";
+        els.sessionPill.classList.remove("signed-in");
+        els.sessionPill.classList.add("hidden");
+        els.logoutBtn.classList.add("hidden");
+        els.navLoginBtn.classList.remove("hidden");
+        els.navRegisterBtn.classList.remove("hidden");
+      }
+    }
+
+    function clearSession() {
+      state.access = "";
+      state.user = null;
+      localStorage.removeItem("cv_parser_access");
+      localStorage.removeItem("cv_parser_refresh");
+      localStorage.removeItem("cv_parser_user");
+      renderSession();
+      showStatus(els.maskedStatus, "Signed out.", "ok");
+      showStatus(els.exactStatus, "Signed out.", "ok");
+    }
+
+    function renderMaskedResults(data) {
+      const groups = [
+        ["Email", data.email || []],
+        ["Phone", data.phone || []],
+        ["Address", data.address || []]
+      ];
+      els.maskedResults.innerHTML = groups.map(([title, values]) => {
+        const items = values.length ? values.map(item => `<li>${escapeHtml(item)}</li>`).join("") : "<li>No results</li>";
+        return `<div class="mini-list"><h3>${title}</h3><ul>${items}</ul></div>`;
+      }).join("");
+    }
+
+    function recordTemplate(record) {
+      const resumeLink = record.resume ? `<a href="${record.resume}" target="_blank" rel="noreferrer">Resume</a>` : "";
+      return `
+        <article class="record">
+          <div class="record-head">
+            <span>#${escapeHtml(record.id)}</span>
+            <span>${escapeHtml(formatDate(record.created_at))}</span>
+          </div>
+          <p class="record-story">${escapeHtml(record.story || "No story saved yet.")}</p>
+          <div class="meta">${resumeLink || "<span>No resume link</span>"}</div>
+        </article>
+      `;
+    }
+
+    els.logoutBtn.addEventListener("click", clearSession);
+
+    els.maskedSearchBtn.addEventListener("click", async () => {
+      clearStatus(els.maskedStatus);
+      if (!state.access) {
+        showStatus(els.maskedStatus, "Login first. This endpoint also requires a staff user.", "warn");
+        return;
+      }
+      if (!state.user || !state.user.is_admin) {
+        showStatus(els.maskedStatus, "Only admin users can use this search.", "warn");
+        return;
+      }
+
+      setBusy(els.maskedSearchBtn, true, "Searching...");
+      try {
+        const query = encodeURIComponent(els.storySearchInput.value.trim());
+        const data = await api(`/cv/story/user-data/?search=${query}`, { headers: authHeaders() });
+        renderMaskedResults(data);
+        showStatus(els.maskedStatus, "Masked data loaded.", "ok");
+      } catch (error) {
+        showStatus(els.maskedStatus, error.message, "bad");
+      } finally {
+        setBusy(els.maskedSearchBtn, false);
+      }
+    });
+
+    els.exactSearchBtn.addEventListener("click", async () => {
+      clearStatus(els.exactStatus);
+      els.exactResults.innerHTML = "";
+
+      if (!state.access) {
+        showStatus(els.exactStatus, "Login first. This endpoint also requires a staff user.", "warn");
+        return;
+      }
+      if (!state.user || !state.user.is_admin) {
+        showStatus(els.exactStatus, "Only admin users can use this search.", "warn");
+        return;
+      }
+
+      const query = els.exactSearchInput.value.trim();
+      if (!query) {
+        showStatus(els.exactStatus, "Enter an exact email or phone value.", "warn");
+        return;
+      }
+
+      setBusy(els.exactSearchBtn, true, "Searching...");
+      try {
+        const data = await api(`/cv/story/search/?search=${encodeURIComponent(query)}`, { headers: authHeaders() });
+        els.exactResults.innerHTML = data.length
+          ? data.map(recordTemplate).join("")
+          : '<div class="empty">No exact matches found.</div>';
+        showStatus(els.exactStatus, `Found ${data.length} matching record${data.length === 1 ? "" : "s"}.`, "ok");
+      } catch (error) {
+        showStatus(els.exactStatus, error.message, "bad");
+      } finally {
+        setBusy(els.exactSearchBtn, false);
+      }
+    });
+
+    renderSession();
+  </script>
+</body>
+</html>

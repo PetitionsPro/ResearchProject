@@ -39,7 +39,8 @@ class UserLoginView(APIView):
                 "user": {
                     "id": user.id,
                     "email": user.email,
-                    "full_name": user.full_name
+                    "full_name": user.full_name,
+                    "is_admin": user.is_staff or user.is_superuser
                 },
                 "refresh": str(refresh),
                 "access": str(access)
